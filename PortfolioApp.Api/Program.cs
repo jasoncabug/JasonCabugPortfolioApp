@@ -1,14 +1,14 @@
+using PortfolioApp.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -16,8 +16,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Ensure Authentication runs BEFORE Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/", () => "PortfolioApp API is online!");
 app.MapControllers();
 
 app.Run();
