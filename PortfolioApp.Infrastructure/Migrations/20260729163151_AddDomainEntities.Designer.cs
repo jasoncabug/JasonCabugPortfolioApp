@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PortfolioApp.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using PortfolioApp.Infrastructure.Persistence;
 namespace PortfolioApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260729163151_AddDomainEntities")]
+    partial class AddDomainEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -272,9 +275,6 @@ namespace PortfolioApp.Infrastructure.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ProjectUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -316,12 +316,7 @@ namespace PortfolioApp.Infrastructure.Migrations
                     b.Property<int>("ProficiencyPercentage")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("ProjectId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ProjectId");
 
                     b.ToTable("Skills");
                 });
@@ -422,18 +417,6 @@ namespace PortfolioApp.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("PortfolioApp.Domain.Entities.Skill", b =>
-                {
-                    b.HasOne("PortfolioApp.Domain.Entities.Project", null)
-                        .WithMany("Skills")
-                        .HasForeignKey("ProjectId");
-                });
-
-            modelBuilder.Entity("PortfolioApp.Domain.Entities.Project", b =>
-                {
-                    b.Navigation("Skills");
                 });
 #pragma warning restore 612, 618
         }

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using PortfolioApp.Application.Auth;
 using PortfolioApp.Application.Common.Interfaces;
-using PortfolioApp.Domain.Entities;
+using PortfolioApp.Infrastructure.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;

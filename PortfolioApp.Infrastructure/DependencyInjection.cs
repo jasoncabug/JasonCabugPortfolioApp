@@ -5,8 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using PortfolioApp.Application.Common.Interfaces;
-using PortfolioApp.Domain.Entities;
 using PortfolioApp.Infrastructure.Authentication;
+using PortfolioApp.Infrastructure.Identity;
 using PortfolioApp.Infrastructure.Persistence;
 using PortfolioApp.Infrastructure.Services;
 using System.Text;
@@ -20,7 +20,15 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(connectionString));
+            options.UseSqlServer(
+                connectionString,
+                b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+
+        // -----------------------------------------------------------------------------
+        // REGISTER IApplicationDbContext HERE
+        // -----------------------------------------------------------------------------
+        services.AddScoped<IApplicationDbContext>(provider =>
+            provider.GetRequiredService<ApplicationDbContext>());
 
         services.AddIdentityCore<ApplicationUser>(options =>
         {
