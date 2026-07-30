@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PortfolioApp.Domain.Entities;
-using ApplicationUser = PortfolioApp.Infrastructure.Identity.ApplicationUser;
 
 namespace PortfolioApp.Infrastructure.Persistence
 {

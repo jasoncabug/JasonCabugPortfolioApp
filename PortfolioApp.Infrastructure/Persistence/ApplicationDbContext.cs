@@ -4,11 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using PortfolioApp.Application.Common.Interfaces;
 using PortfolioApp.Domain.Common;
 using PortfolioApp.Domain.Entities;
-using PortfolioApp.Infrastructure.Identity;
 
 namespace PortfolioApp.Infrastructure.Persistence;
 
-public class ApplicationDbContext : IdentityDbContext<Domain.Entities.ApplicationUser>, IApplicationDbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplicationDbContext
 {
     private readonly ICurrentUserService _currentUserService;
 

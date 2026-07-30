@@ -1,50 +1,85 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using PortfolioApp.Application.Common.Exceptions;
 
-namespace PortfolioApp.Api.Infrastructure
+namespace PortfolioApp.Api.Infrastructure;
+
+public class GlobalExceptionHandler : IExceptionHandler
 {
-    public class GlobalExceptionHandler : IExceptionHandler
+    private readonly ILogger<GlobalExceptionHandler> _logger;
+
+    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
     {
-        private readonly ILogger<GlobalExceptionHandler> _logger;
+        _logger = logger;
+    }
 
-        public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
+    public async ValueTask<bool> TryHandleAsync(
+        HttpContext httpContext,
+        Exception exception,
+        CancellationToken cancellationToken)
+    {
+        if (exception is ValidationException validationException)
         {
-            _logger = logger;
-        }
+            _logger.LogWarning("Validation failed: {Message}", validationException.Message);
 
-        public async ValueTask<bool> TryHandleAsync(
-            HttpContext httpContext,
-            Exception exception,
-            CancellationToken cancellationToken)
-        {
-            // Handle FluentValidation Exceptions
-            if (exception is ValidationException validationException)
+            var errors = validationException.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.ErrorMessage).ToArray()
+                );
+
+            var problemDetails = new HttpValidationProblemDetails(errors)
             {
-                _logger.LogWarning("Validation failed: {Message}", validationException.Message);
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Validation Failed",
+                Detail = "One or more validation errors occurred.",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+            };
 
-                var errors = validationException.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(e => e.ErrorMessage).ToArray()
-                    );
+            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
-                var problemDetails = new HttpValidationProblemDetails(errors)
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Validation Failed",
-                    Detail = "One or more validation errors occurred.",
-                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
-                };
-
-                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
-
-                return true; // Mark as handled
-            }
-
-            // Return false for unhandled exceptions so default handlers can process them
-            return false;
+            return true;
         }
+
+        if (exception is BadRequestException badRequestException)
+        {
+            _logger.LogWarning("Bad request: {Message}", badRequestException.Message);
+
+            var problemDetails = new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Bad Request",
+                Detail = badRequestException.Message,
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+            };
+
+            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+
+            return true;
+        }
+
+        if (exception is UnauthorizedException unauthorizedException)
+        {
+            _logger.LogWarning("Unauthorized: {Message}", unauthorizedException.Message);
+
+            var problemDetails = new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Unauthorized",
+                Detail = unauthorizedException.Message,
+                Type = "https://tools.ietf.org/html/rfc7235#section-3.1"
+            };
+
+            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+
+            return true;
+        }
+
+        return false;
     }
 }

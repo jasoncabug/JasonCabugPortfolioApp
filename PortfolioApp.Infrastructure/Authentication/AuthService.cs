@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using PortfolioApp.Application.Auth;
+using PortfolioApp.Application.Common.Exceptions;
 using PortfolioApp.Application.Common.Interfaces;
-using PortfolioApp.Infrastructure.Identity;
+using PortfolioApp.Domain.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -26,7 +27,7 @@ namespace PortfolioApp.Infrastructure.Authentication
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
             {
-                throw new Exception("User with this email already exists.");
+                throw new BadRequestException("User with this email already exists.");
             }
 
             var user = new ApplicationUser
@@ -43,7 +44,7 @@ namespace PortfolioApp.Infrastructure.Authentication
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                throw new Exception($"Registration failed: {errors}");
+                throw new BadRequestException($"Registration failed: {errors}");
             }
 
             var token = GenerateJwtToken(user);
@@ -55,7 +56,7 @@ namespace PortfolioApp.Infrastructure.Authentication
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
             {
-                throw new Exception("Invalid email or password.");
+                throw new UnauthorizedException("Invalid email or password.");
             }
 
             var token = GenerateJwtToken(user);

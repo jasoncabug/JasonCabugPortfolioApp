@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PortfolioApp.Application.Auth;
@@ -7,7 +8,7 @@ using PortfolioApp.Application.Common.Interfaces;
 namespace PortfolioApp.Api.Controllers;
 
 /// <summary>
-/// Controller responsible for handling user authentication, registration, 
+/// Controller responsible for handling user authentication, registration,
 /// and identity context retrieval.
 /// </summary>
 public class AuthController : ApiControllerBase
@@ -29,15 +30,8 @@ public class AuthController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        try
-        {
-            var response = await _authService.RegisterAsync(request);
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var response = await _authService.RegisterAsync(request);
+        return Ok(response);
     }
 
     /// <summary>
@@ -48,15 +42,8 @@ public class AuthController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        try
-        {
-            var response = await _authService.LoginAsync(request);
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            return Unauthorized(new { message = ex.Message });
-        }
+        var response = await _authService.LoginAsync(request);
+        return Ok(response);
     }
 
     /// <summary>
@@ -72,7 +59,8 @@ public class AuthController : ApiControllerBase
         {
             Message = "You accessed a protected endpoint!",
             UserId = _currentUserService.UserId,
-            Email = User.FindFirst(ClaimTypes.Email)?.Value
+            Email = User.FindFirstValue(JwtRegisteredClaimNames.Email)
+                ?? User.FindFirstValue(ClaimTypes.Email)
         });
     }
 }

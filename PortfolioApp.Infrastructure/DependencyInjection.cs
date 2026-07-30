@@ -5,8 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using PortfolioApp.Application.Common.Interfaces;
+using PortfolioApp.Domain.Entities;
 using PortfolioApp.Infrastructure.Authentication;
-using PortfolioApp.Infrastructure.Identity;
 using PortfolioApp.Infrastructure.Persistence;
 using PortfolioApp.Infrastructure.Services;
 using System.Text;
@@ -69,6 +69,7 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<ApplicationDbContextInitialiser>();
 
         return services;
     }

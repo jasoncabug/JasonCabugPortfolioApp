@@ -2,6 +2,7 @@ using Microsoft.OpenApi.Models;
 using PortfolioApp.Api.Infrastructure;
 using PortfolioApp.Application;
 using PortfolioApp.Infrastructure;
+using PortfolioApp.Infrastructure.Persistence;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,6 +46,8 @@ builder.Services.AddOpenApi(options =>
 });
 
 var app = builder.Build();
+
+await app.InitialiseDatabaseAsync();
 
 // Enable Global Exception Handler middleware
 app.UseExceptionHandler();
